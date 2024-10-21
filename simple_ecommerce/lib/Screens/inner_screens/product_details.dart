@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:fancy_shimmer_image/fancy_shimmer_image.dart'; // Import the fancy_shimmer_image package
+import '../../Provider/product_provider.dart';
 import '../../Widgets/app_name_text.dart';
 import '../../Widgets/products/heart_button.dart';
 import '../../Widgets/subtilte_text.dart';
 import '../../widgets/title_text.dart';
 
+
 class ProductDetails extends StatefulWidget {
   static const routeName = '/ProductDetails';
-  const ProductDetails({super.key});
+  const ProductDetails({Key? key}) : super(key: key);
 
   @override
   State<ProductDetails> createState() => _ProductDetailsState();
@@ -16,6 +20,13 @@ class _ProductDetailsState extends State<ProductDetails> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    final productProvider =
+    Provider.of<ProductProvider>(context, listen: false);
+
+    // Retrieve productId from route arguments
+    final productId = ModalRoute.of(context)!.settings.arguments as String;
+    final getCurrProduct = productProvider.findByProdId(productId);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -30,22 +41,28 @@ class _ProductDetailsState extends State<ProductDetails> {
           icon: const Icon(Icons.arrow_back_ios, size: 18, color: Colors.black),
         ),
       ),
-      body: SingleChildScrollView(
+      body: getCurrProduct == null
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
         child: Column(
           children: [
-            // Product Image with Card Design
+            // Product Image with Fancy Shimmer Effect
             Card(
               elevation: 8,
               shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(40)),
+                borderRadius:
+                BorderRadius.vertical(bottom: Radius.circular(40)),
               ),
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
-                child: Image.asset(
-                  "assets/images/iphone.png", // Ensure this path is correct
+                borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(40)),
+                child: FancyShimmerImage(
+                  imageUrl: getCurrProduct.productImage, // Ensure this path is correct
                   height: size.height * 0.45,
                   width: double.infinity,
-                  fit: BoxFit.cover,
+                  boxFit: BoxFit.cover,
+                  shimmerDuration: const Duration(seconds: 2),
+                  errorWidget: Image.asset('assets/images/placeholder.png'), // Optional: your placeholder image
                 ),
               ),
             ),
@@ -57,9 +74,9 @@ class _ProductDetailsState extends State<ProductDetails> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Product Title
-                  const Text(
-                    "Premium Quality Smartphone",
-                    style: TextStyle(
+                  Text(
+                    getCurrProduct.productTitle,
+                    style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
@@ -67,9 +84,9 @@ class _ProductDetailsState extends State<ProductDetails> {
                   ),
                   const SizedBox(height: 10),
                   // Price
-                  const Text(
-                    "\$166.50",
-                    style: TextStyle(
+                  Text(
+                    getCurrProduct.productPrice,
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.blueAccent,
@@ -79,7 +96,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                   // Action Buttons
                   Row(
                     children: [
-                      HeartButtonWidget(color: Colors.blue.shade300),
+                      const HeartButtonWidget(color: Colors.blue),
                       const SizedBox(width: 15),
                       Expanded(
                         child: ElevatedButton.icon(
@@ -88,11 +105,16 @@ class _ProductDetailsState extends State<ProductDetails> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
-                            padding: const EdgeInsets.symmetric(vertical: 15),
+                            padding:
+                            const EdgeInsets.symmetric(vertical: 15),
                           ),
-                          onPressed: () {},
-                          icon: const Icon(Icons.add_shopping_cart, size: 20),
-                          label: const Text("Add to Cart", style: TextStyle(fontSize: 16)),
+                          onPressed: () {
+                            // Handle Add to Cart action
+                          },
+                          icon: const Icon(Icons.add_shopping_cart,
+                              size: 20,color: Colors.white),
+                          label: const Text("Add to Cart",
+                              style: TextStyle(fontSize: 16,color: Colors.white)),
                         ),
                       ),
                     ],
@@ -102,8 +124,9 @@ class _ProductDetailsState extends State<ProductDetails> {
                   const TitlesTextWidget(label: "About this item"),
                   const SizedBox(height: 10),
                   // Description
-                  const SubtitleTextWidget(
-                    label: "• High-resolution camera\n• Long-lasting battery\n• 5G connectivity\n• Latest OS with new features",
+                   SubtitleTextWidget(
+                    label:
+                    "• ${getCurrProduct.productDescription}",
                     color: Colors.black54,
                     fontSize: 16,
                   ),

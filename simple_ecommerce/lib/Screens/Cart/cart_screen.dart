@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:simple_ecommerce/Provider/cart_provider.dart';
 import 'package:simple_ecommerce/Screens/Cart/cart_bottom_checkout.dart';
 import 'package:simple_ecommerce/Screens/Cart/cart_widget.dart';
 import 'package:simple_ecommerce/Widgets/empty_bag.dart';
@@ -8,45 +10,34 @@ import '../../Services/assets_manger.dart';
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
-  final bool isEmpty = false; // Change this to true to simulate an empty cart
-
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    final cartProvider = Provider.of<CartProvider>(context);
 
-    return isEmpty
+    return cartProvider.getCartItems.isEmpty
         ? Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.blue[100]!,
-              Colors.white,
-            ], // Background gradient
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: Center(
-          child: EmptyBagWidget(
-            imagePath: AssetsManager.shoppingBasket,
-            title: "Your Cart is Empty",
-            subtitle:
-            'It looks like you haven’t added anything to your cart yet.\n'
-                'Start exploring our products and add your favorites!',
-            buttonText: "Shop Now",
-          ),
+      body: Center(
+        child: EmptyBagWidget(
+          imagePath: AssetsManager.shoppingBasket,
+          title: "Your Cart is Empty",
+          subtitle: 'It looks like you haven’t added anything to your cart yet.\n'
+              'Start exploring our products and add your favorites!',
+          buttonText: "Shop Now",
         ),
       ),
     )
         : Scaffold(
-      bottomSheet: CartBottomCheckout(totalAmount: _calculateTotalAmount()), // Pass total amount
+      bottomSheet: CartBottomCheckout(
+        totalAmount: _calculateTotalAmount(),
+
+      ),
       appBar: AppBar(
         leading: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: EdgeInsets.all(size.width * 0.02), 
           child: Image.asset(AssetsManager.shoppingCart),
         ),
-        title: const TitlesTextWidget(label: "Cart (5)"),
+        title: TitlesTextWidget(label: "Cart (${cartProvider.getCartItems.length})"), // Update item count dynamically
         actions: [
           IconButton(
             onPressed: () {
@@ -57,9 +48,12 @@ class CartScreen extends StatelessWidget {
         ],
       ),
       body: ListView.builder(
-        itemCount: 15, // Replace with the actual number of items in the cart
+        itemCount: cartProvider.getCartItems.length,
         itemBuilder: (context, index) {
-          return const CartWidget(); // Display individual cart items
+          return ChangeNotifierProvider.value(
+            value: cartProvider.getCartItems.values.toList()[index],
+            child: CartWidget(),
+          );
         },
       ),
     );
@@ -68,7 +62,7 @@ class CartScreen extends StatelessWidget {
   double _calculateTotalAmount() {
     // Replace with logic to calculate the total amount from the cart items
     double total = 0.0;
-    for (int i = 0; i < 20; i++) { // Assuming 15 items for the example
+    for (int i = 0; i < 20; i++) {
       total += 99.99; // Assuming each item costs $99.99
     }
     return total;

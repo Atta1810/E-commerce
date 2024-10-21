@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "785935802175",
+    "project_id": "depi-ecommerce-9e1a8",
+    "storage_bucket": "depi-ecommerce-9e1a8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:785935802175:android:7ab5d678ba48e7369e3d8a",
+        "android_client_info": {
+          "package_name": "com.example.simple_ecommerce"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBr-sr2_dPbIRaZ6odfVjinkaqCXaEF9oM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_ecommerce/Screens/inner_screens/wish_list.dart';
@@ -13,7 +14,7 @@ import 'inner_screens/orders/order_screen.dart';
 import 'inner_screens/viewed_recently.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  User? user = FirebaseAuth.instance.currentUser;
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +107,7 @@ class ProfileScreen extends StatelessWidget {
                     text: "Wishlist",
                     function: () {
 
-                      Navigator.pushNamed(context, WishlistScreen.routeName);
+                      Navigator.pushNamed(context, WishlistScreen.routName);
 
                     },
                   ),
@@ -115,7 +116,7 @@ class ProfileScreen extends StatelessWidget {
                     text: "Viewed recently",
                     function: () {
 
-                      Navigator.pushNamed(context, ViewedRecentlyScreen.routeName);
+                      Navigator.pushNamed(context, ViewedRecentlyScreen.routName);
 
                     },
                   ),
@@ -157,43 +158,32 @@ class ProfileScreen extends StatelessWidget {
             Center(
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24.0,
-                    vertical: 16.0,
+                  backgroundColor: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      30,
+                    ),
                   ),
-                  shape: const StadiumBorder(), // Changed to a pill-shaped button
-                  elevation: 8,
-                  backgroundColor:
-                      Colors.teal, // Changed to teal for a fresh look
-                  shadowColor: Colors.tealAccent.withOpacity(0.4),
+                ),
+                icon: Icon(user == null ? Icons.login : Icons.logout),
+                label: Text(
+                  user == null ? "Login" : "Logout",
                 ),
                 onPressed: () async {
-
                   await Navigator.pushNamed(
                     context,
                     LoginScreen.routeName,
                   );
+                  // await MyAppMethods.showErrorORWarningDialog(
+                  //     context: context,
+                  //     subtitle: "Are you sure?",
+                  //     fct: () async {
 
-                  //MyAppMethods.showErrorORWarningDialog(
-                   //   context: context,
-                   //   subtitle: "Are you sure?",
-                   //   fct: () {},
-                   //   isError: false);
+                  //     },
+                  //     isError: false);
                 },
-                icon: const Icon(Icons.lock_open_rounded,
-                    color: Colors.white, size: 26), // New lock icon
-                label: const Text(
-                  "Login",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    letterSpacing: 1.1,
-                  ),
-                ),
               ),
             ),
-
             const SizedBox(height: 20),
           ],
         ),

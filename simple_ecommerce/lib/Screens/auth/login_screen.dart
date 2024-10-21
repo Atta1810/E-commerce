@@ -1,7 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:iconly/iconly.dart';
 import 'package:shimmer/shimmer.dart'; // Add this import for shimmer effect
 import 'package:simple_ecommerce/root_screen.dart';
+
+import '../../Services/my_app_method.dart';
 
 class LoginScreen extends StatefulWidget {
   static const routeName = '/LoginScreen';
@@ -18,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   late final FocusNode _passwordFocusNode;
   late final GlobalKey<FormState> _formKey;
   bool obscureText = true;
+  final auth = FirebaseAuth.instance;
   bool _isLoading = false; // Loading state variable
 
   @override
@@ -38,27 +43,49 @@ class _LoginScreenState extends State<LoginScreen> {
     _passwordFocusNode.dispose();
     super.dispose();
   }
-
   Future<void> _loginFct() async {
     final isValid = _formKey.currentState!.validate();
     FocusScope.of(context).unfocus();
+
     if (isValid) {
-      setState(() {
-        _isLoading = true; // Show loading indicator
-      });
+      _formKey.currentState!.save();
 
       try {
-        // Simulate a network request (replace with your login logic)
-        await Future.delayed(Duration(seconds: 2));
+        setState(() {
+          _isLoading = true;
+        });
+        await auth.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+        Fluttertoast.showToast(
+          msg: "Login Successful",
+          toastLength: Toast.LENGTH_SHORT,
+          textColor: Colors.white,
+        );
+        if (!mounted) return;
+
+        Navigator.pushReplacementNamed(context, RootScreen.routName);
+      } on FirebaseAuthException catch (error) {
+        await MyAppMethods.showErrorORWarningDialog(
+          context: context,
+          subtitle: "An error has been occured ${error.message}",
+          fct: () {},
+        );
       } catch (error) {
-        // Handle error (e.g., show a Snackbar)
+        await MyAppMethods.showErrorORWarningDialog(
+          context: context,
+          subtitle: "An error has been occured $error",
+          fct: () {},
+        );
       } finally {
         setState(() {
-          _isLoading = false; // Hide loading indicator
+          _isLoading = false;
         });
       }
     }
   }
+
 
   InputDecoration _buildInputDecoration({
     required String hintText,
@@ -248,7 +275,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   onPressed: () => _loginFct(),
                                   child: const Text(
                                     "Login",
-                                    style: TextStyle(fontSize: 18),
+                                    style: TextStyle(fontSize: 18,color: Colors.white),
                                   ),
                                 ),
                               ),

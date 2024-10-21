@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
+import 'package:provider/provider.dart';
+import 'package:simple_ecommerce/models/cart_model.dart';
+import '../../Provider/product_provider.dart';
 
 class CartWidget extends StatefulWidget {
   const CartWidget({super.key});
@@ -9,18 +12,19 @@ class CartWidget extends StatefulWidget {
 }
 
 class _CartWidgetState extends State<CartWidget> {
-  int _quantity = 1; // Default quantity
-  final double _itemPrice = 99.99; // Set a base item price
-
-  double get totalPrice => _itemPrice * _quantity; // Calculate total price
-
   @override
   Widget build(BuildContext context) {
+    final cartModelProvider = Provider.of<CartModel>(context);
+    final productProvider = Provider.of<ProductProvider>(context);
+    final getCurrProduct =
+    productProvider.findByProdId(cartModelProvider.productId);
     Size size = MediaQuery.of(context).size;
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
 
-    return Padding(
+    return getCurrProduct == null
+        ? const SizedBox() // Empty widget when no product found
+        : Padding(
       padding: const EdgeInsets.all(12),
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -57,8 +61,7 @@ class _CartWidgetState extends State<CartWidget> {
               child: FancyShimmerImage(
                 height: size.height * 0.18,
                 width: size.height * 0.18,
-                imageUrl:
-                "https://image.lexica.art/full_webp/4a643ebb-1c4c-4f9d-a111-de1a414e8e2a",
+                imageUrl: getCurrProduct.productImage,
               ),
             ),
             const SizedBox(width: 12),
@@ -68,7 +71,7 @@ class _CartWidgetState extends State<CartWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Item Title",
+                    getCurrProduct.productTitle, // Dynamically show the product title
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -78,7 +81,7 @@ class _CartWidgetState extends State<CartWidget> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "This is a brief description of the item in the cart.",
+                    getCurrProduct.productDescription, // Dynamically show the product description
                     style: TextStyle(
                       fontSize: 14,
                       color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
@@ -93,11 +96,7 @@ class _CartWidgetState extends State<CartWidget> {
                       // Quantity Selector
                       OutlinedButton(
                         onPressed: () {
-                          if (_quantity > 1) {
-                            setState(() {
-                              _quantity--;
-                            });
-                          }
+                          // Decrease quantity logic
                         },
                         style: OutlinedButton.styleFrom(
                           shape: const CircleBorder(),
@@ -114,7 +113,7 @@ class _CartWidgetState extends State<CartWidget> {
                         ),
                       ),
                       Text(
-                        '$_quantity', // Show current quantity
+                        '${cartModelProvider.quantity}', // Show current quantity
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -123,9 +122,7 @@ class _CartWidgetState extends State<CartWidget> {
                       ),
                       OutlinedButton(
                         onPressed: () {
-                          setState(() {
-                            _quantity++;
-                          });
+                          // Increase quantity logic
                         },
                         style: OutlinedButton.styleFrom(
                           shape: const CircleBorder(),
@@ -143,7 +140,7 @@ class _CartWidgetState extends State<CartWidget> {
                       ),
                       // Price Display
                       Text(
-                        "\$${totalPrice.toStringAsFixed(2)}", // Show dynamic price
+                        '\$${getCurrProduct.productPrice}', // Dynamically show the product price
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,

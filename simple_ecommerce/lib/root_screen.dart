@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:iconly/iconly.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
+import 'package:provider/provider.dart';
+import 'package:simple_ecommerce/Provider/cart_provider.dart';
 import 'package:simple_ecommerce/Screens/Cart/cart_screen.dart';
 import 'package:simple_ecommerce/Screens/home_screen.dart';
 import 'package:simple_ecommerce/Screens/profile_screen.dart';
 import 'package:simple_ecommerce/Screens/search_screen.dart';
 
 class RootScreen extends StatefulWidget {
+  static const routName = '/RootScreen';
   const RootScreen({super.key});
 
   @override
@@ -19,7 +22,7 @@ class _RootScreenState extends State<RootScreen> {
     const HomeScreen(),
     const SearchScreen(),
     const CartScreen(),
-    const ProfileScreen(),
+     ProfileScreen(),
   ];
 
   @override
@@ -30,6 +33,7 @@ class _RootScreenState extends State<RootScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cartProvider=Provider.of<CartProvider>(context);
     return Scaffold(
       body: PageView(
         controller: controller,
@@ -44,20 +48,20 @@ class _RootScreenState extends State<RootScreen> {
           });
           controller.jumpToPage(currentScreen);
         },
-        destinations: const [
-          NavigationDestination(
-              selectedIcon: Icon(IconlyBold.home),
+        destinations:  [
+          const NavigationDestination(
+              selectedIcon:  Icon(IconlyBold.home),
               icon: Icon(IconlyLight.home),
               label: "Home"),
-          NavigationDestination(
+          const NavigationDestination(
               selectedIcon: Icon(IconlyBold.search),
               icon: Icon(IconlyLight.search),
               label: "Search"),
           NavigationDestination(
-              selectedIcon: Icon(IconlyBold.bag),
-              icon: Badge(label: Text("6"), child: Icon(IconlyLight.bag)),
-              label: "Cart"),
-          NavigationDestination(
+              selectedIcon: const Icon(IconlyBold.bag),
+              icon: Badge(label: Text( cartProvider.getCartItems.length.toString()), child: const Icon(IconlyLight.bag)),
+              label: cartProvider.getCartItems.length.toString()),
+          const NavigationDestination(
               selectedIcon: Icon(IconlyBold.profile),
               icon: Icon(IconlyLight.profile),
               label: "Profile"),
@@ -66,3 +70,5 @@ class _RootScreenState extends State<RootScreen> {
     );
   }
 }
+
+

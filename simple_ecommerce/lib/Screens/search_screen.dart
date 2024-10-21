@@ -1,12 +1,16 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:dynamic_height_grid_view/dynamic_height_grid_view.dart';
-import 'package:shimmer/shimmer.dart'; // Import the shimmer package
-
+import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
+import '../Provider/product_provider.dart';
 import '../Services/assets_manger.dart';
-import '../Widgets/products/prouct_widget.dart';
+import '../Widgets/products/product_widget.dart';
+import '../Widgets/title_text.dart';
+import '../models/product_model.dart';
 
 class SearchScreen extends StatefulWidget {
+  static const routeName = '/SearchScreen';
   const SearchScreen({super.key});
 
   @override
@@ -28,8 +32,20 @@ class _SearchScreenState extends State<SearchScreen> {
     super.dispose();
   }
 
+  List<ProductModel> productListSearch = [];
+
+
   @override
   Widget build(BuildContext context) {
+    final productProvider = Provider.of<ProductProvider>(context);
+    // Retrieve the category passed from the category widget
+    String? passedCategory = ModalRoute.of(context)!.settings.arguments as String?;
+
+    // If a category is passed, filter products by that category, otherwise show all products
+    final List<ProductModel> productList = passedCategory == null
+        ? productProvider.getProducts
+        : productProvider.findByCategory(ctgName: passedCategory);
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -37,28 +53,36 @@ class _SearchScreenState extends State<SearchScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Shimmer.fromColors(
-            baseColor: Colors.blue, // Choose a base color
-            highlightColor: Colors.white, // Choose a highlight color
+            baseColor: Colors.blue,
+            highlightColor: Colors.white,
             child: const Text(
               "Search",
               style: TextStyle(
-                fontSize: 24, // Increased font size
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          leading: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Image.asset(AssetsManager.shoppingCart),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back), // Back button icon
+            onPressed: () {
+              Navigator.pop(context); // Navigate back
+            },
           ),
         ),
-        body: Padding(
+        body: productList.isEmpty
+            ? const Center(
+          child: TitlesTextWidget(label: "No product found"),
+        )
+            : Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
               TextField(
+
                 controller: searchTextController,
                 decoration: InputDecoration(
+                  hintText: "Search",
                   filled: true,
                   fillColor: Colors.grey[200],
                   border: OutlineInputBorder(
@@ -77,19 +101,41 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                   ),
                 ),
-                onChanged: (value) {},
+                onChanged: (value) {
+                  setState(() {
+                    productListSearch = productProvider.searchQuery(
+                        searchText: searchTextController.text);
+                  });
+                },
                 onSubmitted: (value) {
-                  log(searchTextController.text);
+                  setState(() {
+                    productListSearch = productProvider.searchQuery(
+                        searchText: searchTextController.text);
+                  });
                 },
               ),
               const SizedBox(height: 10),
+              if (searchTextController.text.isNotEmpty &&
+                  productListSearch.isEmpty) ...[
+                const Center(
+                    child: TitlesTextWidget(
+                      label: "No results found",
+                      fontSize: 40,
+                    ))
+              ],
               Expanded(
                 child: DynamicHeightGridView(
+                  itemCount: searchTextController.text.isNotEmpty
+                      ? productListSearch.length
+                      : productList.length,
+                  builder: ((context, index) {
+                    return ProductWidget(
+                      productId: searchTextController.text.isNotEmpty
+                          ? productListSearch[index].productId
+                          : productList[index].productId,
+                    );
+                  }),
                   crossAxisCount: 2,
-                  itemCount: 20,
-                  builder: (context, index) {
-                    return const ProductWidget(); // Marking as const
-                  },
                 ),
               ),
             ],
